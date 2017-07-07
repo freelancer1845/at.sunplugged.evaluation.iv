@@ -1,0 +1,25 @@
+\documentclass{article}
+% Damit die Verwendung der deutschen Sprache nicht ganz so umst\"andlich wird,
+% sollte man die folgenden Pakete einbinden: 
+\usepackage[latin1]{inputenc}% erm\"oglich die direkte Eingabe der Umlaute 
+\usepackage[T1]{fontenc} % das Trennen der Umlaute
+\usepackage{ngerman} % hiermit werden deutsche Bezeichnungen genutzt und 
+                     % die W\"orter werden anhand der neue Rechtschreibung 
+		     % automatisch getrennt.  
+\usepackage{xcolor,colortbl}
+\usepackage{geometry}
+\geometry{left=0.5in}
+\geometry{right=0.5in}
+\geometry{top=0.5in}
+\geometry{bottom=0.5in}
+
+\definecolor{best}{rgb}{0,1,0}
+\definecolor{worst}{rgb}{1,0,0}
+
+\begin{document}
+
+\section{Data}
+\input{datatable.tex}
+\section{Diagrams}
+
+\end{document}
