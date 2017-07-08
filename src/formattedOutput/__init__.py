@@ -34,7 +34,7 @@ def _formatValue(value):
     if abs(value) < 1E-3:
         valueString = '{:.2E}'.format(value)
     else:
-        valueString = '{:.2}'.format(value)
+        valueString = '{:.2f}'.format(value)
     return valueString
     
 class _CellStyle(Enum):
@@ -58,7 +58,10 @@ def _processDataObject(dataObjects, dataObject, attribs):
     dataRow = dataObject.texName
     for attrib in attribs:
         value = getattr(dataObject, attrib)
-        others = [getattr(otherObject, attrib) for otherObject in dataObjects]
+        others = np.array([getattr(otherObject, attrib) for otherObject in dataObjects])
+        if attrib == 'Isc':
+            value *= -1
+            others *= -1
         minValue = min(others)
         maxValue = max(others)
         if (value <= minValue):
@@ -81,6 +84,8 @@ def _createSummaryRow(dataObjects, attribs):
     meanRow = 'Mean'
     for attrib in attribs:
         data = np.array([getattr(dataObject, attrib) for dataObject in dataObjects])
+        if attrib == 'Isc':
+            data *= -1
         statistics = describe(data)
         maxValue = statistics[1][1]
         minValue = statistics[1][0]

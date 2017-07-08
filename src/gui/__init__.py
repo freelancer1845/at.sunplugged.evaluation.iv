@@ -50,7 +50,7 @@ def processDirLightPlots(dirname):
             
             plots.append(LightDataObject(readFile(os.path.join(dirname, file)), 1, dataName))
             
-    writeDataTableLightTex(plots, ['Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
+    writeDataTableLightTex(plots, ['Voc', 'Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
     createDiagramsTex(plots)
     convertViaTex()
     #multiPlotMethod(plots, 'figure.pdf')

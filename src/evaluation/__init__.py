@@ -8,6 +8,8 @@ import numpy as np
 from scipy import stats
 import logging
 import matplotlib.pyplot as p
+from scipy.interpolate import interp1d
+import scipy.optimize
 
 
 class LightDataObject:
@@ -33,7 +35,7 @@ class LightDataObject:
         evaluation = evaluateLightData(data, area)
         self.Voc = evaluation[0]
         self.Isc = evaluation[1]
-        self.FF = evaluation[2]
+        self.FF = evaluation[2] * 100
         self.MppX = evaluation[3][0]
         self.Mpp = evaluation[3][1]
         self.jsc = evaluation[4]
@@ -54,7 +56,7 @@ class LightDataObject:
         axs[0].plot(self.Voc, 0, 'x', label='Voc')
         axs[0].plot(0, self.Isc, 'x', label='Isc')
         axs[0].plot(self.MppX, self.Mpp, 'x', label = 'Mpp')
-        axs[0].set_ylim((min(self.data[:,1]),max(self.data[:,1])))
+        axs[0].set_ylim((min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1])) ,max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))))
         axs[0].set_xlabel('U')
         axs[0].set_ylabel('I')
         axs[0].set_title(self.texName)
@@ -76,17 +78,17 @@ def _findIsc(data):
     epsilon = 0.1  # only uses data for fitting where -epsilon < U < epsilon
     
     polynom = np.poly1d(np.polyfit(data[(data[:, 0] > -epsilon) & (data[:, 0] < epsilon), 0],
-                data[(data[:, 0] > -epsilon) & (data[:, 0] < epsilon), 1], 2))
+                data[(data[:, 0] > -epsilon) & (data[:, 0] < epsilon), 1], 1))
     return polynom(0)
 
 
 def _findVoc(data):
     epsilon = 0.001  # only uses data for fitting where -epsilon < I < epsilon
-    startRange = np.where((data[:, 1] > -epsilon) == True)[0][0]
-    endRange = np.where((data[:, 1] > epsilon) == True)[0][0]
+    startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
+    endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
     
     polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
-                data[startRange:endRange, 1], 2))
+                data[startRange:endRange, 1], 1))
     #p.plot(data[:,0], data[:, 1], data[:,0], polynom(data[:,0]))
     #p.show()
     roots = polynom.r
@@ -97,21 +99,17 @@ def _findVoc(data):
 
 
 def _findMpp(data):
-    
-    polynom = np.poly1d(np.polyfit(data[:, 0], -1 * data[:, 0] * data[:, 1], 3))
-    rootsOfDerivitive = polynom.deriv().r
-    possibleMax = rootsOfDerivitive[(rootsOfDerivitive > 0) & (rootsOfDerivitive < 1)]
-    if possibleMax.size > 1:
-        logging.info('Found more than one possible Mpp: ' + str(possibleMax))
-    
-    returnArray = np.empty([possibleMax.size,2])
-    for i in range(0, possibleMax.size):
-        returnArray[i, :] = possibleMax[i],polynom(possibleMax[i])
-    return returnArray
+    '''
+        Finds Mpp by interpolating U*I*-1 in a cubic way.
+    '''
+    iF = interp1d(data[:,0],data[:,1] * data[:,0] * -1, 'cubic')
+    x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0)
+    print(x[0], iF(x)[0])
+    return np.array([x[0], iF(x)[0]])
 
 
 def _findRs(data):
-    indexRange = 5 # Size of range around U = 0 that will be sampled for linear fit
+    indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
     
     firstPositiveVoltage = np.where((data[:, 0] > 0) == True)[0][0]
     fitRange = range(firstPositiveVoltage-indexRange, firstPositiveVoltage+indexRange)
@@ -120,7 +118,7 @@ def _findRs(data):
 
 
 def _findRp(data):
-    indexRange = 5 # Size of range around U = 0 that will be sampled for linear fit
+    indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
     
     firstPositiveCurrent = np.where((data[:, 1] > 0) == True)[0][0]
     fitRange = range(firstPositiveCurrent-indexRange, firstPositiveCurrent+indexRange)
@@ -135,8 +133,8 @@ def evaluateLightData(data, area):
     
     Isc = _findIsc(data)
     Voc = _findVoc(data)
-    jsc = Isc / area
-    MppPoint = _findMpp(data)[0]
+    jsc = Isc / area * -1
+    MppPoint = _findMpp(data)
     FF = -1 * MppPoint[1] / (Voc * Isc)
     
     Rs = _findRs(data)
