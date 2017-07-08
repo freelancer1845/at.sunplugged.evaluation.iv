@@ -12,20 +12,22 @@ import re
 import numpy as np
 from scipy.stats import describe
 import scipy.stats
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 
 def _createTexTableHeader(attribs):
-    header = '\\begin{table}[!h]' + os.linesep
-    header += '\\tiny' + os.linesep
+    header = '\\begin{table}[!h]' + '\n'
+    header += '\\tiny' + '\n'
     header += '\\begin{tabular}{l||r|r|r|r|r|r|r|r}'
-    header += os.linesep
+    header += '\n'
     for attribute in attribs:
         header += ' & '
         header += attribute
     
     header += '\\\\'
-    header += os.linesep
+    header += '\n'
     header += '\\hline'
-    header += os.linesep
+    header += '\n'
     return header
     
 def _formatValue(value):
@@ -88,10 +90,10 @@ def _createSummaryRow(dataObjects, attribs):
         minRow += ' & ' + _formatValue(minValue)
         meanRow += ' & ' + _formatValue(mean) + ' $(\\pm ' + _formatValue(std) + ')$'
     
-    texReturn = '\\hline' + os.linesep + '\\hline' + os.linesep
-    texReturn +=  maxRow + '\\\\' + os.linesep + '\\hline' + os.linesep
-    texReturn += minRow + '\\\\' + os.linesep + '\\hline'+ os.linesep
-    texReturn += meanRow + '\\\\' + os.linesep
+    texReturn = '\\hline' + '\n' + '\\hline' + '\n'
+    texReturn +=  maxRow + '\\\\' + '\n' + '\\hline' + '\n'
+    texReturn += minRow + '\\\\' + '\n' + '\\hline'+ '\n'
+    texReturn += meanRow + '\\\\' + '\n'
     return texReturn
 
 def _createTaleEntires(dataObjects, attribs):
@@ -99,14 +101,14 @@ def _createTaleEntires(dataObjects, attribs):
     
     for dataObject in dataObjects:
         tableTex += _processDataObject(dataObjects, dataObject, attribs)
-        tableTex += os.linesep
+        tableTex += '\n'
     
     tableTex += _createSummaryRow(dataObjects, attribs)
     
     return tableTex
 
 def _createTexTableFooter():
-    return '\\end{tabular}' + os.linesep + '\\end{table}' + os.linesep
+    return '\\end{tabular}' + '\n' + '\\end{table}' + '\n'
 
 
 def writeDataTableLightTex(lightDataObjects, attribs):
@@ -122,6 +124,45 @@ def writeDataTableLightTex(lightDataObjects, attribs):
             outputFile.write(texScript)
     except IOError as err:
         print(err)
+    
+def createDiagramsTex(dataObjects):
+    _saveDataPlots(dataObjects)
+    texScript = ''
+    col = 0
+    for dataObject in dataObjects:
+        texScript += '\\includegraphics[width=10cm]{' + dataObject.texName + '.pdf}'
+        if col == 1:
+            texScript += '\n'
+            col = 0
+        else:
+            col = 1
+    
+    texScript += '\n'
+    
+    if os.path.isdir('temp') is False:
+        os.mkdir('temp')
+    try:
+        with open('temp/diagrams.tex', 'w') as outputFile:
+            outputFile.write(texScript)
+    except IOError as err:
+        print(err)
+    
+    
+    
+    
+def _saveDataPlots(dataObjects):
+    for dataObject in dataObjects:
+        figure = plt.figure()
+        gs = GridSpec(2, 1, height_ratios=[3,1])
+        gs.update(hspace=0.7)
+        
+        
+        dataObject.generatePlot([figure.add_subplot(gs[0]), figure.add_subplot(gs[1])])
+        figure.savefig('temp/' + dataObject.texName + '.pdf')
+    
+    
+    
+    
     
     
 def convertViaTex():

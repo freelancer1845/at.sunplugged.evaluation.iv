@@ -9,6 +9,7 @@ from evaluation import evaluateLightData
 from evaluation import LightDataObject
 from formattedOutput import writeDataTableLightTex
 from formattedOutput import convertViaTex
+from formattedOutput import createDiagramsTex
 import os
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -50,6 +51,7 @@ def processDirLightPlots(dirname):
             plots.append(LightDataObject(readFile(os.path.join(dirname, file)), 1, dataName))
             
     writeDataTableLightTex(plots, ['Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
+    createDiagramsTex(plots)
     convertViaTex()
     #multiPlotMethod(plots, 'figure.pdf')
     

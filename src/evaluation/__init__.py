@@ -60,12 +60,13 @@ class LightDataObject:
         axs[0].set_title(self.texName)
         axs[0].grid()
         axs[0].legend(fontsize=6)
+        axs[0].axhline(y=0, color='k')
+        axs[0].axvline(x=0, color='k')
         # Create the Table
         
         axs[1].axis('tight')
         axs[1].axis('off')
-        table = axs[1].table(cellText=self.tableData,loc='center', bbox=[0, 0, 1, 4])
-        table.set_fontsize(5)
+        table = axs[1].table(cellText=self.tableData,loc='center')
         #fig.tight_layout(h_pad=1.4)
         #return fig, axs
         return axs
