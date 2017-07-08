@@ -5,9 +5,9 @@ Created on Jul 01, 2017
 '''
 
 from gui.fileIO import readFile
-from evaluation import evaluateLightData
 from evaluation import LightDataObject
-from formattedOutput import writeDataTableLightTex
+from evaluation import DarkDataObject
+from formattedOutput import writeDataTableTex
 from formattedOutput import convertViaTex
 from formattedOutput import createDiagramsTex
 import os
@@ -16,7 +16,6 @@ import matplotlib.gridspec as gridspec
 from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
-import re
 
 def mainLoop():
     DialogFrame().mainloop()
@@ -43,17 +42,29 @@ class DialogFrame(Frame):
 def processDirLightPlots(dirname):
     print(os.getcwd())
     
-    plots = []
+    lightDataObjects = []
+    darkDataObjects = []
     for file in os.listdir(dirname):
         if file.endswith('-1.txt'):
             dataName = 'e' + re.findall('[0-9]+(?=-1.txt)', file)[0]
-            
-            plots.append(LightDataObject(readFile(os.path.join(dirname, file)), 1, dataName))
-            
-    writeDataTableLightTex(plots, ['Voc', 'Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
-    createDiagramsTex(plots)
-    convertViaTex()
-    #multiPlotMethod(plots, 'figure.pdf')
+            try:
+                lightDataObjects.append(LightDataObject(readFile(os.path.join(dirname, file)), 1, dataName))
+            except Exception as e:
+                print('Failed to calculate light data for "' + dataName + '"... Ignoring it', e)
+        elif file.endswith('-0.txt'):
+            dataName = 'e' +  re.findall('[0-9]+(?=-0.txt)', file)[0]
+            try:
+                darkDataObjects.append(DarkDataObject(readFile(os.path.join(dirname, file)), 1, dataName))
+            except Exception as e:
+                print('Failed to calculate dark data for "' + dataName + '"... Ignoring it', e)
+                
+    writeDataTableTex(lightDataObjects, ['Voc', 'Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
+    createDiagramsTex(lightDataObjects)
+    convertViaTex('lightData')
+    
+    writeDataTableTex(darkDataObjects, ['Rp', 'Rs'])
+    createDiagramsTex(darkDataObjects)
+    convertViaTex('darkData')
     
 
 def multiPlotMethod(dataObjects, fileName):

@@ -116,7 +116,7 @@ def _createTexTableFooter():
     return '\\end{tabular}' + '\n' + '\\end{table}' + '\n'
 
 
-def writeDataTableLightTex(lightDataObjects, attribs):
+def writeDataTableTex(lightDataObjects, attribs):
     lightDataObjects.sort(key=lambda x: int(re.findall('[0-9]+', x.texName)[0]))
     
     texScript = _createTexTableHeader(attribs)
@@ -164,18 +164,18 @@ def _saveDataPlots(dataObjects):
         
         dataObject.generatePlot([figure.add_subplot(gs[0]), figure.add_subplot(gs[1])])
         figure.savefig('temp/' + dataObject.texName + '.pdf')
+        figure.clear()
     
     
     
     
     
-    
-def convertViaTex():
+def convertViaTex(outputFileName):
     
     shutil.copy2('formattedOutput/template.tex', 'temp/template.tex')
     
     
-    proc = subprocess.Popen(['pdflatex', '--aux-directory=temp', '--output-directory=output' , 'template.tex'])
+    proc = subprocess.Popen(['pdflatex',  '-job-name=' + outputFileName,'--aux-directory=temp', '--output-directory=output' , 'template.tex'])
     proc.communicate()
     shutil.rmtree('temp', True)
     

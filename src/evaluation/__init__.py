@@ -11,23 +11,97 @@ import matplotlib.pyplot as p
 from scipy.interpolate import interp1d
 import scipy.optimize
 
+class DarkDataObject:
+    '''
+        A wrapper class for dark data.
+    '''
+    
+
+    def createTableData(self):
+        self.tableData.append(['Rs', self.Rs])
+        self.tableData.append(['Rp', self.Rp])
+        
+    
+    def __init__(self, data, area, texName):
+        self.data = data
+        self.area = area
+        self.texName = texName
+        self.Rs = self._findRs(data)
+        self.Rp = self._findRp(data)
+        self.tableData = []
+        self.createTableData()
+        
+    def _findIsc(self, data, epsilon = 0.1):
+        #epsilon only uses data for fitting where -epsilon < U < epsilon
+        print(data)
+        startRange = np.where(data[:, 0] > -epsilon)[0][0]
+        endRange = np.where(data[:, 0] > epsilon)[0][0]
+        
+        if endRange <= startRange:
+            return self._findIsc(data, epsilon * 10)
+        
+        polynom = np.poly1d(np.polyfit(data[startRange:endRange,0], data[startRange:endRange, 1], 1, 1))
+        return polynom(0)
+    
+    def _findVoc(self, data, epsilon = 0.001):
+        #epsilon only uses data for fitting where -epsilon < I < epsilon
+        startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
+        endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
+        if endRange <= startRange:
+            return self._findVoc(data, epsilon * 10)
+        
+        polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
+                    data[startRange:endRange, 1], 1))
+        #p.plot(data[:,0], data[:, 1], data[:,0], polynom(data[:,0]))
+        #p.show()
+        roots = polynom.r
+        if roots[0] < data[0,0] or roots[0] > data[data[:,0].size-1,0]:
+            return roots[1]
+        else:
+            return roots[0]
+        
+    def _findRp(self, data):
+        p = 0.2 # percentage of data start to be fitted
+        lowestVoltage = np.min(data[:,0])
+        
+    
+        polyCoef = np.polyfit(data[(data[:,0] < lowestVoltage * (1-p)) == True, 0], data[(data[:,0] < lowestVoltage * (1-p)) == True, 1], 1)
+        self.RpC = polyCoef[1]
+        return polyCoef[0]
+    
+    def _findRs(self, data):
+        p = 0.1 # percentage of data end to be fitted
+        highestVoltage = np.max(data[:,0])
+        
+        
+        polyCoef = np.polyfit(data[(data[:,0] > highestVoltage * (1-p)) == True, 0], data[(data[:,0] > highestVoltage * (1-p)) == True, 1], 1)
+        self.RsC = polyCoef[1]
+        return polyCoef[0]
+    
+    def generatePlot(self, axs):
+        axs[0].plot(self.data[:,0], self.data[:,1], label='Data', zorder=100)
+        axs[0].plot(self.data[:,0], self.Rp * self.data[:,0] + self.RpC)
+        axs[0].plot(self.data[:,0], self.Rs * self.data[:,0] + self.RsC)
+        axs[0].set_ylim((min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1])) ,max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))))
+        axs[0].set_xlabel('U')
+        axs[0].set_ylabel('I')
+        axs[0].set_title(self.texName)
+        axs[0].grid()
+        axs[0].legend(fontsize=6)
+        axs[0].axhline(y=0, color='k')
+        axs[0].axvline(x=0, color='k')
+        # Create the Table
+        
+        axs[1].axis('tight')
+        axs[1].axis('off')
+        table = axs[1].table(cellText=self.tableData,loc='center')
+        return axs
+
 
 class LightDataObject:
     '''
         A wrapper class for light data.
     '''
-
-    
-    def createTableData(self):
-        self.tableData.append(['Voc', self.Voc])
-        self.tableData.append(['Isc', self.Isc])
-        self.tableData.append(['FF', self.FF])
-        self.tableData.append(['Mpp', self.Mpp])
-        self.tableData.append(['jsc', self.jsc])
-        self.tableData.append(['Rp', self.Rp])
-        self.tableData.append(['Rs', self.Rs])
-        self.tableData.append(['Eff', self.Eff])
-    
     def __init__(self, data, area, texName):
         self.data = data
         self.area = area
@@ -45,17 +119,27 @@ class LightDataObject:
         self.tableData = []
         self.createTableData()
         
+    def createTableData(self):
+        self.tableData.append(['Voc', self.Voc])
+        self.tableData.append(['Isc', self.Isc])
+        self.tableData.append(['FF', self.FF])
+        self.tableData.append(['Mpp', self.Mpp])
+        self.tableData.append(['jsc', self.jsc])
+        self.tableData.append(['Rp', self.Rp])
+        self.tableData.append(['Rs', self.Rs])
+        self.tableData.append(['Eff', self.Eff])
+        
     def generatePlot(self, axs):
         #fig, axs = p.subplots(2, 1, gridspec_kw = {'height_ratios':[2.5, 1]})
 
         # Do the plot        
-        axs[0].plot(self.data[:,0], self.data[:,1], label='Data')
+        axs[0].plot(self.data[:,0], self.data[:,1], label='Data', zorder=100)
         axs[0].plot(self.data[:,0], self.data[:,0] * self.data[:,1] * -1, label='Power')
         axs[0].plot(self.data[:,0], self.Rp * self.data[:,0] + self.Isc, label='RP')
         axs[0].plot(self.data[:,0],self.Rs * self.data[:,0] - self.Voc * self.Rs, label='RS')
-        axs[0].plot(self.Voc, 0, 'x', label='Voc')
-        axs[0].plot(0, self.Isc, 'x', label='Isc')
-        axs[0].plot(self.MppX, self.Mpp, 'x', label = 'Mpp')
+        axs[0].plot(self.Voc, 0, 'x', label='Voc', zorder=200)
+        axs[0].plot(0, self.Isc, 'x', label='Isc', zorder=200)
+        axs[0].plot(self.MppX, self.Mpp, 'x', label = 'Mpp', zorder=200)
         axs[0].set_ylim((min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1])) ,max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))))
         axs[0].set_xlabel('U')
         axs[0].set_ylabel('I')
@@ -74,23 +158,28 @@ class LightDataObject:
         return axs
     
     
-def _findIsc(data):
-    epsilon = 0.1  # only uses data for fitting where -epsilon < U < epsilon
+def _findIsc(data, epsilon = 0.1):
+    # epsilon only uses data for fitting where -epsilon < U < epsilon
+    startRange = np.where(data[:, 0] > -epsilon)[0][0]
+    endRange = np.where(data[:, 0] > epsilon)[0][0]
+    if endRange <= startRange:
+        return _findIsc(data, epsilon * 10)
     
-    polynom = np.poly1d(np.polyfit(data[(data[:, 0] > -epsilon) & (data[:, 0] < epsilon), 0],
-                data[(data[:, 0] > -epsilon) & (data[:, 0] < epsilon), 1], 1))
+    polynom = np.poly1d(np.polyfit(data[startRange:endRange,0], data[startRange:endRange, 1], 1, 1))
+
     return polynom(0)
 
 
-def _findVoc(data):
-    epsilon = 0.001  # only uses data for fitting where -epsilon < I < epsilon
+def _findVoc(data, epsilon = 0.001):
+    # epsilon only uses data for fitting where -epsilon < I < epsilon
     startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
     endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
     
+    if endRange <= startRange:
+        return _findVoc(data, epsilon * 10)
+    
     polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
                 data[startRange:endRange, 1], 1))
-    #p.plot(data[:,0], data[:, 1], data[:,0], polynom(data[:,0]))
-    #p.show()
     roots = polynom.r
     if roots[0] < data[0,0] or roots[0] > data[data[:,0].size-1,0]:
         return roots[1]
@@ -103,8 +192,7 @@ def _findMpp(data):
         Finds Mpp by interpolating U*I*-1 in a cubic way.
     '''
     iF = interp1d(data[:,0],data[:,1] * data[:,0] * -1, 'cubic')
-    x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0)
-    print(x[0], iF(x)[0])
+    x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0, disp=False)
     return np.array([x[0], iF(x)[0]])
 
 
@@ -146,15 +234,12 @@ def evaluateLightData(data, area):
         
         
         
-
-def evaluateUIData(data):
-    '''
-        Expects an array where each entry contains a U and I data point.
-    '''
-    
-    
-    
-    print(data)
+def evaluateDarkData(data, area):
+    Isc = _findIsc(data)
+    Voc = _findVoc(data)
+    Rs = _findRs(data)
+    Rp = _findRp(data)
+    return Isc, Voc, Rs, Rp
 
 
  
