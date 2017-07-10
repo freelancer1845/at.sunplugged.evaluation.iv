@@ -34,7 +34,7 @@ def _formatValue(value):
     if abs(value) < 1E-3:
         valueString = '{:.2E}'.format(value)
     else:
-        valueString = '{:.2f}'.format(value)
+        valueString = '{:.3f}'.format(value)
     return valueString
     
 class _CellStyle(Enum):
@@ -55,7 +55,7 @@ class _CellStyle(Enum):
 
 
 def _processDataObject(dataObjects, dataObject, attribs):
-    dataRow = dataObject.texName
+    dataRow = dataObject.texName.replace('_', '\\_')
     for attrib in attribs:
         value = getattr(dataObject, attrib)
         others = np.array([getattr(otherObject, attrib) for otherObject in dataObjects])
@@ -93,7 +93,7 @@ def _createSummaryRow(dataObjects, attribs):
         std = scipy.stats.tstd(data)
         maxRow += ' & ' + _formatValue(maxValue)
         minRow += ' & ' + _formatValue(minValue)
-        meanRow += ' & ' + _formatValue(mean) + ' $(\\pm ' + _formatValue(std) + ')$'
+        meanRow += ' & \\makecell{' + _formatValue(mean) + ' \\\\ $(\\pm ' + _formatValue(std) + ')$}'
     
     texReturn = '\\hline' + '\n' + '\\hline' + '\n'
     texReturn +=  maxRow + '\\\\' + '\n' + '\\hline' + '\n'

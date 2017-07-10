@@ -104,6 +104,7 @@ class LightDataObject:
     '''
     def __init__(self, data, area, texName):
         self.data = data
+        self.data.sort(axis=0)
         self.area = area
         self.texName = texName
         evaluation = evaluateLightData(data, area)
@@ -191,7 +192,14 @@ def _findMpp(data):
     '''
         Finds Mpp by interpolating U*I*-1 in a cubic way.
     '''
-    iF = interp1d(data[:,0],data[:,1] * data[:,0] * -1, 'cubic')
+    data.sort(axis=0)
+    uniqueData = np.array(data)
+    for i in range(0, uniqueData[:,0].size):
+        if (i < (uniqueData[:,0].size -2)):
+            if uniqueData[i,0] == uniqueData[i + 1,0]:
+                uniqueData[i,0] = uniqueData[i,0] - 1e-8
+    
+    iF = interp1d(uniqueData[:,0],uniqueData[:,1] * uniqueData[:,0] * -1, 'cubic')
     x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0, disp=False)
     return np.array([x[0], iF(x)[0]])
 
