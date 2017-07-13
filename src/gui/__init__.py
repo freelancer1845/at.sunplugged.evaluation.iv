@@ -10,6 +10,7 @@ from evaluation import DarkDataObject
 from formattedOutput import writeDataTableTex
 from formattedOutput import convertViaTex
 from formattedOutput import createDiagramsTex
+from formattedOutput import writeExcelOutput
 import os
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -96,9 +97,11 @@ class DialogFrame(Frame):
 
     def generateOutput(self):
         if (len(self.lightDataObjects) > 0):
-            writeDataTableTex(self.lightDataObjects, ['Voc', 'Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff'])
+            attribs = ['Voc', 'Isc', 'FF', 'Mpp', 'jsc', 'Rp', 'Rs', 'Eff']
+            writeDataTableTex(self.lightDataObjects, attribs)
             createDiagramsTex(self.lightDataObjects)
             convertViaTex(self.etyOutputFileNamePrefix.get() + 'light')
+            writeExcelOutput('output/excel' + self.etyOutputFileNamePrefix.get() + '.xlsx', self.lightDataObjects, attribs)
         
         if (len(self.darkDataObjects) > 0):
             writeDataTableTex(self.darkDataObjects, ['Rp', 'Rs'])

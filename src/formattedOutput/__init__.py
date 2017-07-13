@@ -14,6 +14,10 @@ from scipy.stats import describe
 import scipy.stats
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+import formattedOutput.ExcelOutput
+
+def writeExcelOutput(exceFileName, dataObjects, attribs):
+    formattedOutput.ExcelOutput.writeDataToExcelFile(exceFileName, dataObjects, attribs)
 
 def _createTexTableHeader(attribs):
     header = '\\begin{table}[!h]' + '\n'
@@ -58,21 +62,25 @@ def _processDataObject(dataObjects, dataObject, attribs):
     dataRow = dataObject.texName.replace('_', '\\_')
     for attrib in attribs:
         value = getattr(dataObject, attrib)
-        others = np.array([getattr(otherObject, attrib) for otherObject in dataObjects])
-        if attrib == 'Isc':
-            value *= -1
-            others *= -1
-        minValue = min(others)
-        maxValue = max(others)
-        if (value <= minValue):
-            cellStyle = _CellStyle.WORST
-        elif (value >= maxValue):
-            cellStyle = _CellStyle.BEST
+        if value is None:
+            dataRow += ' & - '
         else:
-            cellStyle = _CellStyle.NORMAL
-        
-        dataRow += ' & '
-        dataRow += cellStyle.texString(value)
+            others = np.array([getattr(otherObject, attrib) for otherObject in dataObjects])
+            others = others[others != np.array([None])]
+            if attrib == 'Isc':
+                value *= -1
+                others *= -1
+            minValue = min(others)
+            maxValue = max(others)
+            if (value <= minValue):
+                cellStyle = _CellStyle.WORST
+            elif (value >= maxValue):
+                cellStyle = _CellStyle.BEST
+            else:
+                cellStyle = _CellStyle.NORMAL
+            
+            dataRow += ' & '
+            dataRow += cellStyle.texString(value)
     
     dataRow += '\\\\'    
     return dataRow
@@ -84,6 +92,7 @@ def _createSummaryRow(dataObjects, attribs):
     meanRow = 'Mean'
     for attrib in attribs:
         data = np.array([getattr(dataObject, attrib) for dataObject in dataObjects])
+        data = data[data != np.array([None])]
         if attrib == 'Isc':
             data *= -1
         statistics = describe(data)

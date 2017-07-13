@@ -107,12 +107,13 @@ class LightDataObject:
         self.data.sort(axis=0)
         self.area = area
         self.texName = texName
-        evaluation = evaluateLightData(data, area)
+        evaluation = self._evaluateLightData()
         self.Voc = evaluation[0]
         self.Isc = evaluation[1]
-        self.FF = evaluation[2] * 100
+        self.FF = evaluation[2]
         self.MppX = evaluation[3][0]
-        self.Mpp = evaluation[3][1]
+        self.MppY = evaluation[3][1]
+        self.Mpp = evaluation[3][2]
         self.jsc = evaluation[4]
         self.Rp = evaluation[5]
         self.Rs = evaluation[6]
@@ -133,15 +134,25 @@ class LightDataObject:
     def generatePlot(self, axs):
         #fig, axs = p.subplots(2, 1, gridspec_kw = {'height_ratios':[2.5, 1]})
 
+        ymin = min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1]))
+        ymax = max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))
         # Do the plot        
         axs[0].plot(self.data[:,0], self.data[:,1], label='Data', zorder=100)
         axs[0].plot(self.data[:,0], self.data[:,0] * self.data[:,1] * -1, label='Power')
-        axs[0].plot(self.data[:,0], self.Rp * self.data[:,0] + self.Isc, label='RP')
-        axs[0].plot(self.data[:,0],self.Rs * self.data[:,0] - self.Voc * self.Rs, label='RS')
-        axs[0].plot(self.Voc, 0, 'x', label='Voc', zorder=200)
-        axs[0].plot(0, self.Isc, 'x', label='Isc', zorder=200)
-        axs[0].plot(self.MppX, self.Mpp, 'x', label = 'Mpp', zorder=200)
-        axs[0].set_ylim((min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1])) ,max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))))
+        
+        if self.Isc is not None and self.Rp is not None:
+            axs[0].plot(self.data[:,0], 1 / self.Rp * self.data[:,0] + self.Isc, label='RP')
+            axs[0].plot(0, self.Isc, 'x', label='Isc', zorder=200)
+        if self.Voc is not None and self.Rs is not None:
+            axs[0].plot(self.data[:,0], 1 / self.Rs * self.data[:,0] - self.Voc *  1 / self.Rs, label='RS')
+            axs[0].plot(self.Voc, 0, 'x', label='Voc', zorder=200)
+        
+        if self.Mpp is not None:
+            axs[0].plot(self.MppX, self.Mpp, 'x', label = 'Mpp', zorder=200)
+            if self.Mpp > ymax:
+                ymax = self.Mpp * 1.1
+            
+        axs[0].set_ylim(ymin, ymax)
         axs[0].set_xlabel('U')
         axs[0].set_ylabel('I')
         axs[0].set_title(self.texName)
@@ -159,95 +170,102 @@ class LightDataObject:
         return axs
     
     
-def _findIsc(data, epsilon = 0.1):
-    # epsilon only uses data for fitting where -epsilon < U < epsilon
-    startRange = np.where(data[:, 0] > -epsilon)[0][0]
-    endRange = np.where(data[:, 0] > epsilon)[0][0]
-    if endRange <= startRange:
-        return _findIsc(data, epsilon * 10)
-    
-    polynom = np.poly1d(np.polyfit(data[startRange:endRange,0], data[startRange:endRange, 1], 1, 1))
-
-    return polynom(0)
-
-
-def _findVoc(data, epsilon = 0.001):
-    # epsilon only uses data for fitting where -epsilon < I < epsilon
-    startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
-    endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
-    
-    if endRange <= startRange:
-        return _findVoc(data, epsilon * 10)
-    
-    polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
-                data[startRange:endRange, 1], 1))
-    roots = polynom.r
-    if roots[0] < data[0,0] or roots[0] > data[data[:,0].size-1,0]:
-        return roots[1]
-    else:
-        return roots[0]
-
-
-def _findMpp(data):
-    '''
-        Finds Mpp by interpolating U*I*-1 in a cubic way.
-    '''
-    data.sort(axis=0)
-    uniqueData = np.array(data)
-    for i in range(0, uniqueData[:,0].size):
-        if (i < (uniqueData[:,0].size -2)):
-            if uniqueData[i,0] == uniqueData[i + 1,0]:
-                uniqueData[i,0] = uniqueData[i,0] - 1e-8
-    
-    iF = interp1d(uniqueData[:,0],uniqueData[:,1] * uniqueData[:,0] * -1, 'cubic')
-    x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0, disp=False)
-    return np.array([x[0], iF(x)[0]])
-
-
-def _findRs(data):
-    indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
-    
-    firstPositiveVoltage = np.where((data[:, 0] > 0) == True)[0][0]
-    fitRange = range(firstPositiveVoltage-indexRange, firstPositiveVoltage+indexRange)
-
-    return np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
-
-
-def _findRp(data):
-    indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
-    
-    firstPositiveCurrent = np.where((data[:, 1] > 0) == True)[0][0]
-    fitRange = range(firstPositiveCurrent-indexRange, firstPositiveCurrent+indexRange)
-
-    return np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
-
-
-def evaluateLightData(data, area):
-    '''
-        Expects an array where each entry contains a U and I data point.
-    '''
-    
-    Isc = _findIsc(data)
-    Voc = _findVoc(data)
-    jsc = Isc / area * -1
-    MppPoint = _findMpp(data)
-    FF = -1 * MppPoint[1] / (Voc * Isc)
-    
-    Rs = _findRs(data)
-    Rp = _findRp(data)
-    
-   
-    return Voc, Isc, FF, MppPoint, jsc , Rs, Rp
-   
+    def _findIsc(self, data, epsilon = 0.1):
+        # epsilon only uses data for fitting where -epsilon < U < epsilon
+        try:
+            startRange = np.where(data[:, 0] > -epsilon)[0][0]
+            endRange = np.where(data[:, 0] > epsilon)[0][0]
+            if endRange <= startRange:
+                return self._findIsc(data, epsilon * 10)
+            
+            polynom = np.poly1d(np.polyfit(data[startRange:endRange,0], data[startRange:endRange, 1], 1, 1))
         
+            return polynom(0)
+        except Exception as err:
+            print('Error while calculating Isc for LightObject:', err)
+            return None
+    
+    
+    def _findVoc(self, data, epsilon = 0.001):
+        # epsilon only uses data for fitting where -epsilon < I < epsilon
+        try:
+            startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
+            endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
+            
+            if endRange <= startRange:
+                return self._findVoc(data, epsilon * 10)
+            
+            polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
+                        data[startRange:endRange, 1], 1))
+            roots = polynom.r
+            if roots[0] < data[0,0] or roots[0] > data[data[:,0].size-1,0]:
+                return roots[1]
+            else:
+                return roots[0]
+        except Exception as err:
+            print('Error while calculating Voc for LightObject:', err)
+            return None
+    
+    def _findMpp(self, data):
+        '''
+            Finds Mpp by interpolating U*I*-1 in a cubic way.
+        '''
+        try:
+            data.sort(axis=0)
+            uniqueData = np.array(data)
+            for i in range(0, uniqueData[:,0].size):
+                if (i < (uniqueData[:,0].size -2)):
+                    if uniqueData[i,0] == uniqueData[i + 1,0]:
+                        uniqueData[i,0] = uniqueData[i,0] - 1e-8
+            
+            iF = interp1d(uniqueData[:,0],uniqueData[:,1] * uniqueData[:,0] * -1, 'cubic')
+            x = scipy.optimize.fmin(lambda x: iF(x) * -1, 0, disp=False)
+            uIInterp = interp1d(uniqueData[:,0], uniqueData[:,1], 'cubic')
+            return np.array([x[0], uIInterp(x[0]),  iF(x)[0]])
+        except Exception as err:
+            print('Error while calculating Voc for LightObject:', err)
+            return None
+    
+    
+    def _findRs(self, data):
+        try:
+            indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
+            
+            firstPositiveVoltage = np.where((data[:, 0] > 0) == True)[0][0]
+            fitRange = range(firstPositiveVoltage-indexRange, firstPositiveVoltage+indexRange)
         
+            return 1 / np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
+        except Exception as err:
+            print('Error while calculating Rs for LightObject:', err)
+            return None
+    
+    def _findRp(self, data):
+        try:
+            indexRange = 10 # Size of range around U = 0 that will be sampled for linear fit
+            
+            firstPositiveCurrent = np.where((data[:, 1] > 0) == True)[0][0]
+            fitRange = range(firstPositiveCurrent-indexRange, firstPositiveCurrent+indexRange)
         
-def evaluateDarkData(data, area):
-    Isc = _findIsc(data)
-    Voc = _findVoc(data)
-    Rs = _findRs(data)
-    Rp = _findRp(data)
-    return Isc, Voc, Rs, Rp
-
-
- 
+            return 1/np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
+        except Exception as err:
+            print('Error while calculating Rp for LightObject:', err)
+            return None
+    
+    def _evaluateLightData(self):
+        '''
+            Expects an array where each entry contains a U and I data point.
+        '''
+        
+        Isc = self._findIsc(self.data)
+        Voc = self._findVoc(self.data)
+        jsc = Isc / self.area * -1
+        MppPoint = self._findMpp(self.data)
+        if MppPoint is not None and Voc is not None and Isc is not None:
+            FF = -1 * MppPoint[2] / (Voc * Isc) * 100
+        else:
+            FF = None
+        Rs = self._findRs(self.data)
+        Rp = self._findRp(self.data)
+        
+       
+        return Voc, Isc, FF, MppPoint, jsc , Rs, Rp
