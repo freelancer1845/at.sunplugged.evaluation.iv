@@ -107,6 +107,7 @@ class DialogFrame(Frame):
             writeDataTableTex(self.darkDataObjects, ['Rp', 'Rs'])
             createDiagramsTex(self.darkDataObjects)
             convertViaTex(self.etyOutputFileNamePrefix.get() + 'dark')
+            pass
 
     def processDirLightPlots(self, dirname):
         print(os.getcwd())

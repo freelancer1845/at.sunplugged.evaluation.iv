@@ -5,6 +5,7 @@ Created on 13.07.2017
 '''
 
 import openpyxl
+from openpyxl.utils import get_column_letter
 
 SHEET_DATA_TITLE = "DataSheet"
 SHEET_RESULTS_TITLE = "Results"
@@ -13,7 +14,8 @@ SHEET_RESULTS_TITLE = "Results"
 def _createDataSheet(_sheet, dataObjects):
     currentColumn = 1
     for dataObject in dataObjects:
-        _sheet.column_dimensions[currentColumn].width = 35
+        _sheet.column_dimensions[get_column_letter(currentColumn)].width = 20
+        _sheet.column_dimensions[get_column_letter(currentColumn + 1)].width = 20
         
         nameCellX = _sheet.cell(row = 1, column = currentColumn)
         nameCellY = _sheet.cell(row = 1, column = currentColumn + 1)
@@ -40,9 +42,11 @@ def _createResultsSheet(sheet, dataObjects, attribs):
     currentRow = 2
     for dataObject in dataObjects:
         sheet.cell(row = currentRow, column = 1).value = dataObject.texName
-        
+        sheet.column_dimensions[get_column_letter(1)].width = 20
         currentColumn = 2
         for attrib in attribs:
+            sheet.column_dimensions[get_column_letter(currentColumn)].width = 20
+            
             value = getattr(dataObject, attrib)
             if value is None:
                 value = "#NUM!"
