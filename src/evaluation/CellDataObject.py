@@ -24,6 +24,8 @@ class CellDataObject():
         self.Rp = None
         self.Rs = None
         self.Eff = None
+        self.Mpp = None
+        self.Area = None
         self.data = None
         
     def __str__(self):
