@@ -6,15 +6,15 @@ Created on 18.07.2017
 
 
 columnHeadings = (
-    'Sample Name',
-    'Rp [ohmcm²]',
-    'Rs [ohmcm²]',
-    'Pmpp [W/cm²]',
-    'jsc[A/cm²]',
-    'Voc[V]',
-    'FF[%]',
-    'Eff[%]',
-    'FFxVoc'
+    r'Sample Name',
+    r'Rp [ohmcm2]',
+    r'Rs [ohmcm2]',
+    r'Pmpp [W/cm2]',
+    r'jsc[A/cm2]',
+    r'Voc[V]',
+    r'FF[%]',
+    r'Eff[%]',
+    r'FFxVoc'
     )
 
 
