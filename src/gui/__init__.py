@@ -18,17 +18,19 @@ from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror
 from tkinter.ttk import Treeview
+from gui.DatabaseReader import DatabaseReader
+from gui.DatabaseReaderFrame import DatabaseReaderFrame
 
 def mainLoop():
     DialogFrame().mainloop()
-
+    #DatabaseReader().mainloop()
 
 class DialogFrame(Frame):
     def __init__(self):
         Frame.__init__(self)
         self.master.title("Example")
-        self.master.rowconfigure(5, weight=1)
-        self.master.columnconfigure(5, weight=1)
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
         self.grid(sticky=W + E + N + S)
 
         self.outputFileNamePrefix = Label(self, text="Output file prefix + dark/light")
@@ -82,6 +84,8 @@ class DialogFrame(Frame):
         
         self.lightDataObjects = []
         self.darkDataObjects = []
+        
+        DatabaseReaderFrame(self.master).grid(row=7, column = 0, columnspan=3, sticky = W + E)
         
 
     def load_file(self):
