@@ -6,7 +6,7 @@ Created on 18.07.2017
 
 from tkinter import *
 from tkinter.filedialog import askopenfilename
-from evaluation.databasereader.DataExtractor import DatabaseConnection
+from databasereader import DatabaseConnection
 from formattedOutput.ExcelOutput import saveCellDataObjects
 
 class DatabaseReaderFrame(Frame):

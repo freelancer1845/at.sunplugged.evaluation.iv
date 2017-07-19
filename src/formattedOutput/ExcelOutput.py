@@ -8,9 +8,11 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from evaluation.CellDataObject import CellDataObject
 from formattedOutput.ResultsSheet import fillResultsSheet
+from formattedOutput.CellDataObjectSheet import createCellDataObjectSheet
 
 SHEET_DATA_TITLE = "DataSheet"
 SHEET_RESULTS_TITLE = "Results"
+SHEET_DATA_PREFIX = "Data-"
 
 
 def _createWorkbook(excelFile):
@@ -36,10 +38,12 @@ def saveCellDataObjects(excelFile, cellDataObjects):
     
     wb = _createWorkbook(excelFile)
     fillResultsSheet(wb.get_sheet_by_name(SHEET_RESULTS_TITLE), cellDataObjects)
+    for idx,cellDataObject in enumerate(cellDataObjects, start = 2):
+        sheet = wb.create_sheet(SHEET_DATA_PREFIX + str(cellDataObject.Id), idx)
+        createCellDataObjectSheet(sheet, cellDataObject)
+
     
-
-
-
+    wb.save(excelFile)
 
 def _createDataSheet(_sheet, dataObjects):
     currentColumn = 1

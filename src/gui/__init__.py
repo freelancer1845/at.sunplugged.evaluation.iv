@@ -5,12 +5,9 @@ Created on Jul 01, 2017
 '''
 
 from gui.fileIO import readFile
-from evaluation import LightDataObject
-from evaluation import DarkDataObject
 from formattedOutput import writeDataTableTex
 from formattedOutput import convertViaTex
 from formattedOutput import createDiagramsTex
-from formattedOutput import writeExcelOutput
 import os
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec

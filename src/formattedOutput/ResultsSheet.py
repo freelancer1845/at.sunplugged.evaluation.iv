@@ -23,11 +23,11 @@ def fillResultsSheet(sheet, cellDataObjects):
     for idx, heading in enumerate(columnHeadings, start=1):
         sheet.cell(row = 1, column = idx).value = heading
         
-    for idx, dataObject in enumerate(cellDataObjects, start=1):
-        sheet.cell(row = idx, column = 1).value = dataObject.Name
+    for idx, dataObject in enumerate(cellDataObjects, start=2):
+        sheet.cell(row = idx, column = 1).value = dataObject.Id
         sheet.cell(row = idx, column = 2).value = dataObject.Rp
         sheet.cell(row = idx, column = 3).value = dataObject.Rs
-        sheet.cell(row = idx, column = 4).value = dataObject.Mpp / dataObject.Area
+        sheet.cell(row = idx, column = 4).value = dataObject.MppA
         sheet.cell(row = idx, column = 5).value = dataObject.Jsc
         sheet.cell(row = idx, column = 6).value = dataObject.Voc
         sheet.cell(row = idx, column = 7).value = dataObject.FF
