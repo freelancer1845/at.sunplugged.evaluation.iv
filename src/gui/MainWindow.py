@@ -1,37 +1,27 @@
 '''
-Created on Jul 01, 2017
+Created on 19.07.2017
 
 @author: Jascha Riedel
 '''
 
-from gui.fileIO import readFile
-from formattedOutput import writeDataTableTex
-from formattedOutput import convertViaTex
-from formattedOutput import createDiagramsTex
-import os
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from tkinter import *
-from tkinter.filedialog import askdirectory
-from tkinter.messagebox import showerror
-from tkinter.ttk import Treeview
+from gui.LabViewFilesReaderFrame import LabViewFilesReaderFrame
 from gui.DatabaseReaderFrame import DatabaseReaderFrame
-from gui.MainWindow import MainWindow
+from gui.CellDataObjectsTreeview import CellDataObjectsTreeview
+from tkinter.filedialog import asksaveasfilename
+from formattedOutput import saveCellDataObjects
 
-def mainLoop():
-    mainWindow = MainWindow()
-    mainWindow.mainloop()
-    #DialogFrame().mainloop()
-    #DatabaseReader().mainloop()
 
-class DialogFrame(Frame):
+class MainWindow(Frame):
     def __init__(self):
         Frame.__init__(self)
         self.master.title("Example")
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
         self.grid(sticky=W + E + N + S)
-        
+
+
+        """
         self.outputFileNamePrefix = Label(self, text="Output file prefix + dark/light")
         self.outputFileNamePrefix.grid(row=1, column=0, sticky=W)
 
@@ -83,8 +73,33 @@ class DialogFrame(Frame):
         
         self.lightDataObjects = []
         self.darkDataObjects = []
+        """
         
-        DatabaseReaderFrame(self.master).grid(row=7, column = 0, columnspan=3, sticky = W + E)
+        LabViewFilesReaderFrame(self).grid(row=1, column= 0, sticky =N + W + E)
+        
+        DatabaseReaderFrame(self).grid(row=2, column = 0, sticky = N + W + E)
+        
+        self.btnExtractData = Button(text='Save Data in Excel File', command=self._handleSaveData)
+        self.btnExtractData.grid(row=3, column = 0, sticky = N + W + E)
+        
+        self.cellDataTreeView = CellDataObjectsTreeview()
+        self.cellDataTreeView.grid(row=4, column=0, sticky = N+W+E)
+        
+        
+        
+
+
+    def addCellDataObject(self, source, cellDataObject):
+        self.cellDataTreeView.addCellDataObject(source, cellDataObject)
+        
+    def _handleSaveData(self):
+        print('saving data...')
+        cellObjects = [v for k,v in self.cellDataTreeView.cellDataObjects.items()]
+        fileName = asksaveasfilename()
+        if fileName is not None:
+            saveCellDataObjects(fileName, cellObjects)
+            print('Data saved.')
+            
         
 
     def load_file(self):
@@ -139,25 +154,3 @@ class DialogFrame(Frame):
                     self.fileList.insert('', 'end', file, text=file, values=('ERROR'))
                     print('Failed to calculate dark data for "' + dataName + '"... Ignoring it', e)
                     raise e
-         
-
-        
-
-def multiPlotMethod(dataObjects, fileName):
-    if len(dataObjects) % 2 != 0:
-        rows = len(dataObjects) + 1 / 2
-    else:
-        rows = len(dataObjects) / 2
-    
-    
-    mainFigure = plt.figure(figsize=(10, rows * 4))
-    outer = gridspec.GridSpec(int(rows), 2, wspace=0.2, hspace=0.2)
-    
-    for i in range(0, len(dataObjects)):
-        inner = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[i], wspace=0.1, hspace=1.3, height_ratios=[8, 1])
-        
-        axs = dataObjects[i].generatePlot((plt.Subplot(mainFigure, inner[0]), plt.Subplot(mainFigure, inner[1])))
-        mainFigure.add_subplot(axs[0])
-        mainFigure.add_subplot(axs[1])
-    
-    mainFigure.savefig(fileName)

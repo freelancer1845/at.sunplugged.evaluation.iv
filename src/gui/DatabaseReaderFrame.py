@@ -17,11 +17,14 @@ class DatabaseReaderFrame(Frame):
     DEFAULT_DIRECTORY = r"C:\Users\jasch\SunpluggedJob\SPROD\SPROD.MDB"
     
     
-    def __init__(self, master):
+    def __init__(self, mainWindow):
         '''
         Constructor
         '''
         Frame.__init__(self)
+        
+        self.mainWindow = mainWindow
+        
         self.grid(sticky = NW, pady = 10)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=3)
@@ -64,10 +67,10 @@ class DatabaseReaderFrame(Frame):
         with DatabaseConnection(self.etyDatabase.get()) as db:
             data = db.getDatabaseEntries(ids)
             for dataObject in data:
-                print(str(dataObject))
+                self.mainWindow.addCellDataObject("SPROD", dataObject)
                 
-            print('Writing Excel File...')
-            saveCellDataObjects(r"output/excelOutput.xls", data)
+            #print('Writing Excel File...')
+            #saveCellDataObjects(r"output/excelOutput.xls", data)
         
     def _getIdsFromEntry(self):
         fieldInput = self.etyIds.get()
