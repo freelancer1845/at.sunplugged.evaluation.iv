@@ -67,7 +67,7 @@ class DatabaseReaderFrame(Frame):
         with DatabaseConnection(self.etyDatabase.get()) as db:
             data = db.getDatabaseEntries(ids)
             for dataObject in data:
-                self.mainWindow.addCellDataObject("SPROD", dataObject)
+                self.mainWindow.addCellDataObject(dataObject)
                 
             #print('Writing Excel File...')
             #saveCellDataObjects(r"output/excelOutput.xls", data)

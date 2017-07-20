@@ -4,7 +4,7 @@ Created on Jul 01, 2017
 @author: Jascha Riedel
 '''
 
-from gui.fileIO import readFile
+from gui.fileIO import readLabViewFile
 from formattedOutput import writeDataTableTex
 from formattedOutput import convertViaTex
 from formattedOutput import createDiagramsTex

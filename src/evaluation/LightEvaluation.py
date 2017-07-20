@@ -77,11 +77,13 @@ class LightEvaluation():
 
 
     @staticmethod
-    def findMpp(self, data):
+    def findMpp(data):
         '''
             Finds Mpp by interpolating U*I*-1 in a cubic way.
             Parameters:
                 data: 2-D Array containing U-I data
+            Returns:
+                result: MppU, MppI, Mpp Power
         '''
         data.sort(axis=0)
         uniqueData = np.array(data)
@@ -96,7 +98,7 @@ class LightEvaluation():
         return np.array([x[0], uIInterp(x[0]),  iF(x)[0]])
 
     @staticmethod
-    def findRp(self, data, p = 0.2):
+    def findRp(data, p = 0.2):
         '''
         Finds the Rp via linear Regression by fitting the first 'p' percentage of the U-I data.
         Parameters:
@@ -108,11 +110,10 @@ class LightEvaluation():
         
     
         polyCoef = np.polyfit(data[(data[:,0] < lowestVoltage * (1-p)) == True, 0], data[(data[:,0] < lowestVoltage * (1-p)) == True, 1], 1)
-        self.RpC = polyCoef[1]
         return polyCoef[0]
     
     @staticmethod
-    def findRs(self, data, p = 0.1):
+    def findRs(data, p = 0.1):
         '''
         Finds the Series Resistance via linear regression by fitting the last 'p' percentage of the U-I data.
         Parameters:
@@ -125,8 +126,24 @@ class LightEvaluation():
         
         
         polyCoef = np.polyfit(data[(data[:,0] > highestVoltage * (1-p)) == True, 0], data[(data[:,0] > highestVoltage * (1-p)) == True, 1], 1)
-        self.RsC = polyCoef[1]
         return polyCoef[0]
     
     
+    @staticmethod
+    def calculateFF(Voc, Isc, Mpp):
+        '''
+        Calculates the FillFactor from Voc Isc and Mpp
+        '''
+        return abs(Mpp / Voc / Isc * 100)
+    
+    @staticmethod
+    def calculateEff(Voc, Isc, FF, Pin):
+        '''
+        Calculates the Efficiency from Voc, Isc, FF and PowerIn (light source power)
+        '''
+        return abs(Voc * Isc * FF / Pin)
+        
+        
+        
+        
     

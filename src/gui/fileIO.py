@@ -6,7 +6,7 @@ Created on 01.07.2017
 
 import numpy
 
-def readFile(fileName):
+def readLabViewFile(fileName):
     '''
         Reads a data file and returns a array (Voltage, Current)
     '''
