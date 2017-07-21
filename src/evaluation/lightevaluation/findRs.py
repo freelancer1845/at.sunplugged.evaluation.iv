@@ -14,7 +14,7 @@ def findRs(data, indexRange = 10):
         data:        2-D Array with U-I datapoints
         indexRange:  Range around U = 0 of datapoints that will be used for fitting    
     '''
-    data.sort(axis = 0)
+    data = data[data[:,0].argsort()]
     
     firstPositiveVoltage = np.where((data[:, 0] > 0) == True)[0][0]
     fitRange = range(firstPositiveVoltage-indexRange, firstPositiveVoltage+indexRange)

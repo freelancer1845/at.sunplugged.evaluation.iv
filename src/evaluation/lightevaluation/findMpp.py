@@ -16,7 +16,7 @@ def findMpp(data):
         Returns:
             result: MppU, MppI, Mpp Power
     '''
-    data.sort(axis=0)
+    data = data[data[:,0].argsort()]
     uniqueData = np.array(data)
     for i in range(0, uniqueData[:,0].size):
         if (i < (uniqueData[:,0].size -2)):
