@@ -6,17 +6,17 @@ Created on 21.07.2017
 
 import numpy as np
 
-def findRs(data, p = 0.1):
+def findRs(data, indexRange = 10):
     '''
-    Finds the Series Resistance via linear regression by fitting the last 'p' percentage of the U-I data.
+    Calculates Rs by fitting (+- indexRange) around U = 0 and
+    taking the inverse of the slope.
     Parameters:
-        data: 2-D Array containing U-I data
-        p: Percentage of end to be fitted
-    
+        data:        2-D Array with U-I datapoints
+        indexRange:  Range around U = 0 of datapoints that will be used for fitting    
     '''
+    data.sort(axis = 0)
     
-    highestVoltage = np.max(data[:,0])
-    
-    
-    polyCoef = np.polyfit(data[(data[:,0] > highestVoltage * (1-p)) == True, 0], data[(data[:,0] > highestVoltage * (1-p)) == True, 1], 1)
-    return polyCoef[0]
+    firstPositiveVoltage = np.where((data[:, 0] > 0) == True)[0][0]
+    fitRange = range(firstPositiveVoltage-indexRange, firstPositiveVoltage+indexRange)
+
+    return 1 / np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]

@@ -4,11 +4,15 @@ Created on 18.07.2017
 @author: Jascha Riedel
 '''
 
+import numpy as np
 from openpyxl.chart import (
     ScatterChart,
     Reference,
     Series
     )
+
+from openpyxl.utils import column_index_from_string as get_col_index
+from openpyxl.chart.axis import NumericAxis
 
 
 SUMMARAY_HEADINGS_AND_ATTRIBS = (
@@ -39,6 +43,10 @@ PLOT_TITLES = (
     'Voltage [V]',
     'Current [I]'
     )
+
+PLOT_SPECIAL_COLUMNS = {
+    'Rs': get_col_index('X')
+    }
 
 
 def createCellDataObjectSheet(sheet, cellDataObject):
@@ -73,18 +81,36 @@ def _createDataColumns(sheet, cellDataObject):
 def _createDataPlot(sheet, cellDataObject):
     chart = ScatterChart()
     chart.title = PLOT_TITLES[0]
+    chart.style = 13
     chart.x_axis.title = PLOT_TITLES[1]
     chart.y_axis.title = PLOT_TITLES[2]
+    chart.x_axis.crosses = None
+    chart.x_axis.crossesAt = 0.0
+    chart.y_axis.crosses = None
+    chart.y_axis.crossesAt = 0.0
     chart.legend = None
     
-    dataX = Reference(sheet, min_col = 1, min_row = 4, max_row = len(cellDataObject.data[:,0]) + 4)
-    dataY = Reference(sheet, min_col = 2, min_row = 4, max_row = len(cellDataObject.data[:,0]) + 4)
+    dataX = Reference(sheet, min_col = 1, min_row = 4, max_row = len(cellDataObject.data[:,0]) + 3)
+    dataY = Reference(sheet, min_col = 2, min_row = 3, max_row = len(cellDataObject.data[:,0]) + 3)
     
-    series = Series(dataY , xvalues = dataX)
+    series = Series(dataY , xvalues = dataX, title_from_data=True)
     chart.append(series)
+    chart.append(_createRsSeries(sheet, cellDataObject))
     sheet.add_chart(chart, 'K10')
 
 
-
+def _createRsSeries(sheet,cellDataObject):
+    
+    sheet.cell(row = 1, column = PLOT_SPECIAL_COLUMNS['Rs']).value = 'Rs-Linear-yData'
+    
+    for idx,dataPair in enumerate(cellDataObject.data,start=2):
+        sheet.cell(row=idx, column = PLOT_SPECIAL_COLUMNS['Rs']).value = '=1 / H2 * A{} - D2 / H2'.format(idx + 2)
+    
+    dataX = Reference(sheet, min_col = 1, min_row = 4, max_row = len(cellDataObject.data[:,0]) + 3)
+    dataY = Reference(sheet, min_col = PLOT_SPECIAL_COLUMNS['Rs'], min_row = 1, max_row = len(cellDataObject.data[:,0]) + 1)
+    
+    series = Series(dataY, xvalues = dataX, title_from_data=True)
+    
+    return series
 
 

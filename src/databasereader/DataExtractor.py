@@ -75,7 +75,7 @@ class DatabaseConnection():
     def _getData(self, mes):
         
         sql = 'SELECT Cv,Cc FROM MesResPts WHERE MesId={} AND MesTypId=1 AND SubMesId=1'.format(mes[0])
-        
+        sql = 'SELECT RdV,RdI FROM MesPts WHERE MesId={} and MesTypId=9'.format(mes[0])
         data = np.array(self._executeAndFetchAll(sql))
         data.sort(axis=0)
         return data
@@ -113,5 +113,6 @@ class DatabaseConnection():
 if __name__ == '__main__':
     with DatabaseConnection("C:\\Users\\jasch\\SunpluggedJob\\SPROD\\SPROD.mdb") as db:
         print('Connected')
-        db.getDatabaseEntries([556, 557])
+        print(db._executeAndFetchAll("SELECT * FROM MesRes WHERE Id=582"))
+        db.getDatabaseEntries([582])
         print('Done')

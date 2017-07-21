@@ -87,8 +87,11 @@ class AreaAndPowerInputDialog(Dialog):
         self.etyPowerInput.grid(row=1,column=1)
         
     def apply(self):
-        self.result = float(self.etyarea.get()), float(self.etyPowerInput.get())
-        
+        try:
+            self.result = float(self.etyarea.get()), float(self.etyPowerInput.get())
+        except ValueError as err:
+            print(err)
+            
         
         
         

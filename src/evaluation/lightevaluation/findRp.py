@@ -6,17 +6,18 @@ Created on 21.07.2017
 
 import numpy as np
 
-def findRp(data, p = 0.2):
+def findRp(data, indexRange = 10):
     '''
-    Finds the Rp via linear Regression by fitting the first 'p' percentage of the U-I data.
+    Calculates Rp by fitting (+- indexRange) around I = 0 and
+    taking the inverse of the slope.
     Parameters:
-        data: 2-D Array containing U-I data
-        p: Percentage of start to be fitted
+        data:        2-D Array with U-I datapoints
+        indexRange:  Range around I = 0 of datapoints that will be used for fitting    
     '''
+    data.sort(axis=0)
     
-    lowestVoltage = np.min(data[:,0])
-    
+    firstPositiveCurrent = np.where((data[:, 1] > 0) == True)[0][0]
+    fitRange = range(firstPositiveCurrent-indexRange, firstPositiveCurrent+indexRange)
 
-    polyCoef = np.polyfit(data[(data[:,0] < lowestVoltage * (1-p)) == True, 0], data[(data[:,0] < lowestVoltage * (1-p)) == True, 1], 1)
-    return polyCoef[0]
+    return 1/np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
     
