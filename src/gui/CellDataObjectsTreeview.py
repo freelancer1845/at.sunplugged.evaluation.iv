@@ -30,16 +30,20 @@ class CellDataObjectsTreeview(Treeview):
         )
     
     
-    def __init__(self):
+    
+    def __init__(self, parent):
         '''
         Constructor
         '''
-        Treeview.__init__(self)
+        Treeview.__init__(self, master=parent)
+        
         
         self.cellDataObjects = {}
         
         self._createContextMenus()
         self._createColumns()
+        self._bindCommands()
+        
         
         
     def addCellDataObject(self, cellDataObject):
@@ -127,6 +131,9 @@ class CellDataObjectsTreeview(Treeview):
         self.contextMenu.add_command(label = 'Edit', command=_editSelected)
         self.contextMenu.add_separator()
         self.contextMenu.add_command(label = 'Add Prefix To Id', command=_addPrefixSelected)
+        self.contextMenu.add_separator()
+        self.contextMenu.add_command(label= 'Select All', command= lambda: self.selection_set(self.get_children()))
+        
         
         def do_popup(event):
             # display the popup menu
@@ -154,6 +161,14 @@ class CellDataObjectsTreeview(Treeview):
             self.heading(col[0], text=col[1])
         
         
+
+    def _bindCommands(self):
+        def _selectAll(event):
+            self.selection_set(self.get_children())
+            
+            
+        self.bind("<Control-Key-a>", _selectAll)
+    
 
 
 class EditDialog(gui.tkSimpleDialog.Dialog):

@@ -5,6 +5,7 @@ Created on 19.07.2017
 '''
 
 from tkinter import *
+from tkinter import ttk
 from gui.LabViewFilesReaderFrame import LabViewFilesReaderFrame
 from gui.DatabaseReaderFrame import DatabaseReaderFrame
 from gui.CellDataObjectsTreeview import CellDataObjectsTreeview
@@ -17,6 +18,7 @@ class MainWindow(Frame):
         Frame.__init__(self)
         self.master.title("Example")
         self.master.rowconfigure(0, weight=1)
+        self.master.rowconfigure(4, weight = 1)
         self.master.columnconfigure(0, weight=1)
         self.grid(sticky=W + E + N + S)
 
@@ -26,11 +28,18 @@ class MainWindow(Frame):
         
         DatabaseReaderFrame(self).grid(row=2, column = 0, sticky = N + W + E)
         
-        self.btnExtractData = Button(text='Save Data in Excel File', command=self._handleSaveData)
-        self.btnExtractData.grid(row=3, column = 0, sticky = N + W + E)
+        self.btnExtractData = Button(self, text='Save Data in Excel File', command=self._handleSaveData)
+        self.btnExtractData.grid(row=3, column = 0, sticky = N + W + E, pady=5)
         
-        self.cellDataTreeView = CellDataObjectsTreeview()
-        self.cellDataTreeView.grid(row=4, column=0, sticky = N+W+E)
+        treeViewFrame = Frame(self, relief=RAISED)
+        treeViewFrame.grid(row = 4, column = 0, sticky = N + W + E + S)
+        treeViewFrame.rowconfigure(0, weight=1)
+        
+        self.cellDataTreeView = CellDataObjectsTreeview(treeViewFrame)
+        self.cellDataTreeView.grid(row=0, column=0, sticky = N+W+E+S)
+        
+        vsb = ttk.Scrollbar(treeViewFrame, orient = 'vertical', command=self.cellDataTreeView.yview)
+        vsb.grid(row=0, column = 1, sticky = N + S + E)
         
         
         
@@ -48,7 +57,7 @@ class MainWindow(Frame):
             print('Data saved.')
             
         
-
+"""
     def load_file(self):
         dirname = askdirectory()
         if dirname:
@@ -101,3 +110,5 @@ class MainWindow(Frame):
                     self.fileList.insert('', 'end', file, text=file, values=('ERROR'))
                     print('Failed to calculate dark data for "' + dataName + '"... Ignoring it', e)
                     raise e
+                    
+"""

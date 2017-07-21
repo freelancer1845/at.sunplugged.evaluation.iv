@@ -21,7 +21,7 @@ class DatabaseReaderFrame(Frame):
         '''
         Constructor
         '''
-        Frame.__init__(self)
+        Frame.__init__(self,master=mainWindow)
         
         self.mainWindow = mainWindow
         

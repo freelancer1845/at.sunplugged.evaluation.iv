@@ -35,6 +35,14 @@ def fillResultsSheet(sheet, cellDataObjects):
         sheet.cell(row = idx, column = 9).value = None
         
         
+    def as_text(value):
+        if value is None:
+            return ""
+        return str(value)
+    
+    for column_cells in sheet.columns:
+        length = max(len(as_text(cell.value)) + 1 for cell in column_cells)
+        sheet.column_dimensions[column_cells[0].column].width = length
         
         
         

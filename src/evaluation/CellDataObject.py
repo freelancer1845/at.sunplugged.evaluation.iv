@@ -4,7 +4,6 @@ Created on 18.07.2017
 @author: Jascha Riedel
 '''
 
-from evaluation import LightEvaluation
 
 class CellDataObject():
     '''

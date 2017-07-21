@@ -1,15 +1,15 @@
 '''
 Created on 19.07.2017
 
-@author: jasch
+@author: Jascha Riedel
 '''
 from tkinter import *
 from tkinter.filedialog import askopenfilenames
 from gui.fileIO import readLabViewFile
-from evaluation import CellDataObject
-from evaluation import LightEvaluation
+from evaluation import *
 from os import path as path
 from gui.tkSimpleDialog import Dialog
+import Config
 
 class LabViewFilesReaderFrame(Frame):
     '''
@@ -24,7 +24,7 @@ class LabViewFilesReaderFrame(Frame):
         Parameters:
             mainWindow: To submit the CellDataObjects to the MainWindow
         '''
-        Frame.__init__(self)
+        Frame.__init__(self, master=mainWindow)
         
         self.mainWindow = mainWindow
         
@@ -43,32 +43,32 @@ class LabViewFilesReaderFrame(Frame):
         
     
     def _loadLightData(self):
-        names = askopenfilenames()
-        if names != None:
+        names = askopenfilenames(filetypes = Config.FILE_TYPES_LIGHT)
+        if names != None and len(names) != 0:
             d = AreaAndPowerInputDialog(self.master)
         for name in names:
             data = readLabViewFile(name)
             cellDataObject = CellDataObject()
             cellDataObject.data = data
             cellDataObject.Id = path.basename(name).replace(".txt", "")
-            cellDataObject.Voc = LightEvaluation.findVoc(data)
-            cellDataObject.Isc = LightEvaluation.findIsc(data)
-            mppResult = LightEvaluation.findMpp(data)
+            cellDataObject.Voc = findVoc(data)
+            cellDataObject.Isc = findIsc(data)
+            mppResult = findMpp(data)
             cellDataObject.MppU = mppResult[0]
             cellDataObject.MppI = mppResult[1]
-            cellDataObject.Rs = LightEvaluation.findRp(data)
-            cellDataObject.Rp = LightEvaluation.findRs(data)
-            cellDataObject.FF = LightEvaluation.calculateFF(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.Mpp)
+            cellDataObject.Rs = findRp(data)
+            cellDataObject.Rp = findRs(data)
+            cellDataObject.FF = calculateFF(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.Mpp)
             if d.result != None:
                 cellDataObject.Area = d.result[0]
-                cellDataObject.Eff = LightEvaluation.calculateEff(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.FF, d.result[1])
+                cellDataObject.Eff = calculateEff(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.FF, d.result[1])
 
                 
             self.mainWindow.addCellDataObject(cellDataObject)
             
             
     def _loadDarkData(self):
-        names = askopenfilenames()
+        names = askopenfilenames(filetypes = Config.FILE_TYPES_DARK)
         for name in names:
             print(name)
 
