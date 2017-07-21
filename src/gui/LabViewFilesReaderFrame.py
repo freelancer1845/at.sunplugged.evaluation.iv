@@ -6,7 +6,8 @@ Created on 19.07.2017
 from tkinter import *
 from tkinter.filedialog import askopenfilenames
 from gui.fileIO import readLabViewFile
-from evaluation import *
+from evaluation.lightevaluation import *
+from evaluation import CellDataObject
 from os import path as path
 from gui.tkSimpleDialog import Dialog
 import Config

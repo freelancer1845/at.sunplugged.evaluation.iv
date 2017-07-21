@@ -5,7 +5,7 @@ Created on Jul 1, 2017
 '''
 
 from evaluation.CellDataObject import CellDataObject
-from evaluation.lightevaluation import *
+import evaluation.lightevaluation
 
 
 
