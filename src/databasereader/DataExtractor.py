@@ -13,6 +13,11 @@ connStrFormat = (
     r"DBQ="
 )
 
+backUpStrFormat = (
+    r"DRIVER={Microsoft Access Driver (*.mdb)};"
+    r"DBQ="
+)
+
 
 
     
@@ -97,7 +102,15 @@ class DatabaseConnection():
     
     def _openDatabseConnection(self, databaseFile):
         connStr = connStrFormat + databaseFile + ";"
-        self.connection = pyodbc.connect(connStr)
+        print(connStr)
+        try:
+            self.connection = pyodbc.connect(connStr)
+        except Exception as err:
+            print('Error while connecting...', err)
+            print('Trying backup conn string')
+            connStr = backUpStrFormat + databaseFile + ";"
+            self.connection = pyodbc.connect(connStr)
+            print(connStr)
         print('successfully connected')
     
     def _cleanUp(self):

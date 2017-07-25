@@ -17,8 +17,8 @@ def findVoc(data, epsilon = 0.001):
     #epsilon only uses data for fitting where -epsilon < I < epsilon
     startRange = np.where(((data[:, 1] > -epsilon) == True) & (data[:,0] > 0))[0][0]
     endRange = np.where(((data[:, 1] > epsilon) == True) & (data[:,0] > 0))[0][0]
-    if endRange <= startRange:
-        return findVoc(data, epsilon * 10)
+    if endRange <= startRange or (endRange - startRange < 10):
+        return findVoc(data, epsilon * 2)
     
     polynom = np.poly1d(np.polyfit(data[startRange:endRange, 0],
                 data[startRange:endRange, 1], 1))
