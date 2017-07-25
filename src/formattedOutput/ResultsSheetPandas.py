@@ -49,6 +49,12 @@ def createResultsSheet(writer, cellDataObjects):
     df = pd.DataFrame(summaryDic)
 
     df.to_excel(writer, SHEET_TITLE, index = False)
+    print(df.iloc[:,2:])
+    
+    statisticsFrame = df.iloc[:,1:].describe()
+    statisticsFrame.loc[('mean','std','max','min'), :].to_excel(writer, SHEET_TITLE, startrow=len(cellDataObjects) + 2)
+    
+    
     if writer.engine == "xlwt":
         for col in range(0, 12):
             worksheet.col(col).width = 4000

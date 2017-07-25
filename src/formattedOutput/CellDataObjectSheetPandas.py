@@ -42,6 +42,7 @@ PLOT_TITLES = (
 
 
 
+
 def createCellDataSheet(writer, cellDataObject):
     
     if writer.engine == "xlwt":
@@ -88,19 +89,27 @@ def createCellDataSheet(writer, cellDataObject):
     if writer.engine == "xlwt":
         print('Charts are not supported for Excel 2003...')
     elif writer.engine == 'xlsxwriter':
-        chart = writer.book.add_chart({'type': 'scatter'})
+        _createChart(writer, worksheet, cellDataObject)
         
-        chart.add_series({
-                'name': [cellDataObject.Id, 3, 1],
-                'values': [cellDataObject.Id, 3,1,len(cellDataObject.data[:,0]) + 3, 1],
-                'categories': [cellDataObject.Id, 3, 0, len(cellDataObject.data[:,0]) + 3, 0]
-            })
+    
+def _createChart(writer, worksheet, cellDataObject):
+    chart = writer.book.add_chart({'type': 'scatter'})
         
-        chart.set_x_axis({'name': 'Voltage'})
-        chart.set_y_axis({'name': 'Current'})
-        
-        worksheet.insert_chart('I7', chart)
+    chart.add_series({
+            'name': [cellDataObject.Id, 3, 1],
+            'values': [cellDataObject.Id, 3,1,len(cellDataObject.data[:,0]) + 3, 1],
+            'categories': [cellDataObject.Id, 3, 0, len(cellDataObject.data[:,0]) + 3, 0]
+        })
+    
+    chart.set_x_axis({'name': 'Voltage'})
+    chart.set_y_axis({'name': 'Current'})
     
     
+    
+    
+    
+    worksheet.insert_chart('I7', chart)
+
+
     
     

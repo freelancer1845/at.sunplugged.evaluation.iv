@@ -9,4 +9,4 @@ def calculateEff(Voc, Isc, FF, Pin):
     '''
     Calculates the Efficiency from Voc, Isc, FF and PowerIn (light source power)
     '''
-    return abs(Voc * Isc * FF / Pin)
+    return abs(Voc * Isc * FF / Pin) * 100
