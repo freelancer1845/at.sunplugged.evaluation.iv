@@ -53,15 +53,17 @@ class DatabaseConnection():
         results = self._getResults(mes)
         dataObject.Voc = results[0]
         dataObject.Isc = results[1]
-        dataObject.FF = results[2] * 100
-        dataObject.Eff = results[3] * 100
-        dataObject.Rp = results[4]
-        dataObject.Rs = results[5]
+        dataObject.MppU = results[2]
+        dataObject.MppI = results[3]
+        dataObject.FF = results[4] * 100
+        dataObject.Eff = results[5] * 100
+        dataObject.Rp = results[6]
+        dataObject.Rs = results[7]
         dataObject.data = self._getData(mes)
         return dataObject
     
     def _getResults(self, mes):
-        sql = 'SELECT RsVoc,RsIsc,RsMxe,RsEff,RsRsr,RsRsh FROM MesRes WHERE ID={}'.format(mes[1])
+        sql = 'SELECT RsVoc,RsIsc,RsVpm,RsIpm,RsMxe,RsEff,RsRsr,RsRsh FROM MesRes WHERE ID={}'.format(mes[1])
         return self._executeAndFetchAll(sql)[0]
     
     def _getMesRows(self, ids):
