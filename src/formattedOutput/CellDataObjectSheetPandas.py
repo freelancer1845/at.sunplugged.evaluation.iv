@@ -97,10 +97,9 @@ def _createChart(writer, worksheet, cellDataObject):
         
     chart.add_series({
             'name': [cellDataObject.Id, 3, 1],
-            'values': [cellDataObject.Id, 3,1,len(cellDataObject.data[:,0]) + 3, 1],
-            'categories': [cellDataObject.Id, 3, 0, len(cellDataObject.data[:,0]) + 3, 0]
+            'values': [cellDataObject.Id, 4,1,len(cellDataObject.data[:,0]) + 3, 1],
+            'categories': [cellDataObject.Id, 4, 0, len(cellDataObject.data[:,0]) + 3, 0]
         })
-    
     chart.set_x_axis({'name': 'Voltage'})
     chart.set_y_axis({'name': 'Current'})
     

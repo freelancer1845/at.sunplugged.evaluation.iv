@@ -36,16 +36,19 @@ def createResultsSheet(writer, cellDataObjects):
     
     summaryDic = collections.OrderedDict()
     
-    summaryDic[columnHeadings[0]] = [getattr(cell, 'Id') for cell in cellDataObjects]
-    summaryDic[columnHeadings[1]] = [getattr(cell, 'Rp') for cell in cellDataObjects]
-    summaryDic[columnHeadings[2]] = [getattr(cell, 'Rs') for cell in cellDataObjects]
-    summaryDic[columnHeadings[3]] = [getattr(cell, 'MppA') for cell in cellDataObjects]
-    summaryDic[columnHeadings[4]] = [getattr(cell, 'Jsc') for cell in cellDataObjects]    
-    summaryDic[columnHeadings[5]] = [getattr(cell, 'Voc') for cell in cellDataObjects]   
-    summaryDic[columnHeadings[6]] = [getattr(cell, 'FF') for cell in cellDataObjects]    
-    summaryDic[columnHeadings[7]] = [getattr(cell, 'Eff') for cell in cellDataObjects]    
-    summaryDic[columnHeadings[8]] = [None for cell in cellDataObjects]    
     
+    for cell in cellDataObjects:
+        summaryDic.setdefault(columnHeadings[0], list()).append(cell.Id)
+        summaryDic.setdefault(columnHeadings[1], list()).append(cell.Rp / cell.Area)
+        summaryDic.setdefault(columnHeadings[2], list()).append(cell.Rs / cell.Area)
+        summaryDic.setdefault(columnHeadings[3], list()).append(cell.MppA)
+        summaryDic.setdefault(columnHeadings[4], list()).append(cell.Jsc)
+        summaryDic.setdefault(columnHeadings[5], list()).append(cell.Voc)
+        summaryDic.setdefault(columnHeadings[6], list()).append(cell.FF)
+        summaryDic.setdefault(columnHeadings[7], list()).append(cell.Eff)
+        summaryDic.setdefault(columnHeadings[8], list()).append(cell.FF * cell.Voc)
+    
+
     df = pd.DataFrame(summaryDic)
 
     df.to_excel(writer, SHEET_TITLE, index = False)

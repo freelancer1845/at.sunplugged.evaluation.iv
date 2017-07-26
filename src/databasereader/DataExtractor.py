@@ -53,8 +53,8 @@ class DatabaseConnection():
         results = self._getResults(mes)
         dataObject.Voc = results[0]
         dataObject.Isc = results[1]
-        dataObject.FF = results[2]
-        dataObject.Eff = results[3]
+        dataObject.FF = results[2] * 100
+        dataObject.Eff = results[3] * 100
         dataObject.Rp = results[4]
         dataObject.Rs = results[5]
         dataObject.data = self._getData(mes)
