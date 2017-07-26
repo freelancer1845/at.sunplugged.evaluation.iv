@@ -15,7 +15,6 @@ SUMMARAY_HEADINGS_AND_ATTRIBS = (
     ['R_p', 'Rp'],
     ['R_s', 'Rs'],
     ['Pmpp[W/cm^2]', 'MppA'],
-    ['jsc[A/cm^2]', 'Jsc'],
     ['FF', 'FF'],
     ['Eff[%]', 'Eff']
     )

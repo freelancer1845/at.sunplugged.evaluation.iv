@@ -52,7 +52,6 @@ def createResultsSheet(writer, cellDataObjects):
     df = pd.DataFrame(summaryDic)
 
     df.to_excel(writer, SHEET_TITLE, index = False)
-    print(df.iloc[:,2:])
     
     statisticsFrame = df.iloc[:,1:].describe()
     statisticsFrame.loc[('mean','std','max','min'), :].to_excel(writer, SHEET_TITLE, startrow=len(cellDataObjects) + 2)
