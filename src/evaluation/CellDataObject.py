@@ -4,6 +4,7 @@ Created on 18.07.2017
 @author: Jascha Riedel
 '''
 
+from evaluation.lightevaluation import *
 
 class CellDataObject():
     '''
@@ -69,6 +70,32 @@ class CellDataObject():
             return abs(self.MppI * self.MppU)
         else:
             return None
+
+        
+    @staticmethod
+    def createFromData(Id, data, area = None, powerInput = None):
+        """
+        Creates a CellDataObject from U-I Data [V, A], area[cm^2] and powerInput[W]
+        area and powerInput are required for Efficiency
+        """
+        cellDataObject = CellDataObject()
+        cellDataObject.data = data
+        cellDataObject.Id = Id
+        cellDataObject.Voc = findVoc(data)
+        cellDataObject.Isc = findIsc(data)
+        mppResult = findMpp(data)
+        cellDataObject.MppU = mppResult[0]
+        cellDataObject.MppI = mppResult[1]
+        cellDataObject.Rs = findRp(data)
+        cellDataObject.Rp = findRs(data)
+        cellDataObject.FF = calculateFF(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.Mpp)
+        if area != None:
+            cellDataObject.Area = area
+        if area != None and powerInput != None:
+            cellDataObject.Eff = calculateEff(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.FF, powerInput)
+
+        return cellDataObject
+        
 
     def __str__(self):
         return self.stringRepFormat.format(self.Id, self.Voc, self.Isc, self.FF, self.Jsc, self.Rp, self.Rs, self.Eff)

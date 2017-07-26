@@ -48,23 +48,12 @@ class LabViewFilesReaderFrame(Frame):
         if names != None and len(names) != 0:
             d = AreaAndPowerInputDialog(self.master)
         for name in names:
-            data = readLabViewFile(name)
-            cellDataObject = CellDataObject()
-            cellDataObject.data = data
-            cellDataObject.Id = path.basename(name).replace(".txt", "")
-            cellDataObject.Voc = findVoc(data)
-            cellDataObject.Isc = findIsc(data)
-            mppResult = findMpp(data)
-            cellDataObject.MppU = mppResult[0]
-            cellDataObject.MppI = mppResult[1]
-            cellDataObject.Rs = findRp(data)
-            cellDataObject.Rp = findRs(data)
-            cellDataObject.FF = calculateFF(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.Mpp)
-            if d.result != None:
-                cellDataObject.Area = d.result[0]
-                cellDataObject.Eff = calculateEff(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.FF, d.result[1])
-
-                
+            
+            cellDataObject = CellDataObject.createFromData(path.basename(name).replace(".txt", ""),
+                                                           readLabViewFile(name),
+                                                           d.result[0],
+                                                           d.result[1])
+            
             self.mainWindow.addCellDataObject(cellDataObject)
             
             
