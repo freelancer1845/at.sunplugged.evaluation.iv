@@ -53,7 +53,7 @@ class LabViewFilesReaderFrame(Frame):
                                                            readLabViewFile(name),
                                                            d.result[0],
                                                            d.result[1])
-            
+            cellDataObject.plotCellDataObject()
             self.mainWindow.addCellDataObject(cellDataObject)
             
             

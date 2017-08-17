@@ -18,6 +18,5 @@ def findRp(data, indexRange = 10):
     
     firstPositiveCurrent = np.where((data[:, 1] > 0) == True)[0][0]
     fitRange = range(firstPositiveCurrent-indexRange, firstPositiveCurrent+indexRange)
-
     return 1/np.polyfit(data[fitRange, 0], data[fitRange, 1], 1)[0]
     

@@ -5,6 +5,8 @@ Created on 18.07.2017
 '''
 
 from evaluation.lightevaluation import *
+import matplotlib.pyplot as plt
+
 
 class CellDataObject():
     '''
@@ -39,6 +41,7 @@ class CellDataObject():
         self.MppU = None
         self.MppI = None
         self.Area = None
+        self.powerInput = None
         self.data = None
         
     @property
@@ -92,12 +95,54 @@ class CellDataObject():
         if area != None:
             cellDataObject.Area = area
         if area != None and powerInput != None:
-            cellDataObject.Eff = calculateEff(cellDataObject.Voc, cellDataObject.Isc, cellDataObject.FF, powerInput)
+            cellDataObject.Eff = calculateEff(cellDataObject.Mpp / area, powerInput)
+            cellDataObject.powerInput = powerInput
 
         return cellDataObject
         
+    def plotCellDataObject(self):
+        if isinstance(self, CellDataObject) is False:
+            raise ValueError("Only CellDataObjects allowed!")
+        
+        
+        ymin = min(self.data[:,1]) - 0.1 * abs(min(self.data[:,1]))
+        ymax = max(self.data[:,1]) + 0.1 * abs(max(self.data[:,1]))
+        data = self.data
+        
+        plt.plot(data[:,0], data[:,1], label="U-I Data")
+        plt.plot(data[:,0], data[:,0] * data[:,1], label="Power")
+        if self.Isc is not None and self.Rp is not None:
+                plt.plot(self.data[:,0], 1 / self.Rp * self.data[:,0] + self.Isc, label='RP')
+                plt.plot(0, self.Isc, 'x', label='Isc', zorder=200)
+        if self.Voc is not None and self.Rs is not None:
+            plt.plot(self.data[:,0], 1 / self.Rs * self.data[:,0] - self.Voc *  1 / self.Rs, label='RS')
+            plt.plot(self.Voc, 0, 'x', label='Voc', zorder=200)
+        
+        if self.Mpp is not None:
+            plt.plot(self.MppU, self.Mpp, 'x', label = 'Mpp', zorder=200)
+            if self.Mpp > ymax:
+                ymax = self.Mpp * 1.1
+        
+        #plt.set_ylim(ymin, ymax)
+        #plt.set_xlabel('U')
+        #plt.set_ylabel('I')
+        #plt.set_title(self.Id)
+        plt.grid()
+        plt.legend(fontsize=6)
+        plt.axhline(y=0, color='k')
+        plt.axvline(x=0, color='k')
+        
+        plt.show()
 
     def __str__(self):
         return self.stringRepFormat.format(self.Id, self.Voc, self.Isc, self.FF, self.Jsc, self.Rp, self.Rs, self.Eff)
     
+    
+
+
+
+    
+    
+    
+
     

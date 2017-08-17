@@ -41,15 +41,19 @@ class DatabaseConnection():
         mesRows = self._getMesRows(ids)
         cellDataObjects = []
         for mes in mesRows:
-            data = self._createDataObjectFromMesRow(mes)
-            cellDataObjects.append(data)
+            cellDataObject = self._createDataObjectFromMesRow(mes)
+            cellDataObjects.append(cellDataObject)
         
         return cellDataObjects
     
     
     def _createDataObjectFromMesRow(self, mes):
         dataObject = CellDataObject()
-        dataObject.Id = mes[0]
+        if mes[3] != "":
+            dataObject.Id = str(mes[3]).strip() + "-" + str(mes[0])
+        else:
+            dataObject.Id = mes[0]
+        
         results = self._getResults(mes)
         dataObject.Voc = results[0]
         dataObject.Isc = results[1]

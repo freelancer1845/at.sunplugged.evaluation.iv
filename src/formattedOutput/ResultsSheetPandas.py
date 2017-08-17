@@ -19,7 +19,7 @@ columnHeadings = (
     r'Voc[V]',
     r'FF[%]',
     r'Eff[%]',
-    r'FFxVoc'
+    r'PowerInput[W/cm2]'
     )
 
 
@@ -39,14 +39,14 @@ def createResultsSheet(writer, cellDataObjects):
     
     for cell in cellDataObjects:
         summaryDic.setdefault(columnHeadings[0], list()).append(cell.Id)
-        summaryDic.setdefault(columnHeadings[1], list()).append(cell.Rp / cell.Area)
-        summaryDic.setdefault(columnHeadings[2], list()).append(cell.Rs / cell.Area)
+        summaryDic.setdefault(columnHeadings[1], list()).append(cell.Rp * cell.Area)
+        summaryDic.setdefault(columnHeadings[2], list()).append(cell.Rs * cell.Area)
         summaryDic.setdefault(columnHeadings[3], list()).append(cell.MppA)
         summaryDic.setdefault(columnHeadings[4], list()).append(cell.Jsc)
         summaryDic.setdefault(columnHeadings[5], list()).append(cell.Voc)
         summaryDic.setdefault(columnHeadings[6], list()).append(cell.FF)
         summaryDic.setdefault(columnHeadings[7], list()).append(cell.Eff)
-        summaryDic.setdefault(columnHeadings[8], list()).append(cell.FF * cell.Voc)
+        summaryDic.setdefault(columnHeadings[8], list()).append(cell.powerInput)
     
 
     df = pd.DataFrame(summaryDic)
